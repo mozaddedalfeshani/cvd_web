@@ -31,6 +31,10 @@ export default function CVDAssessmentForm({
   loading,
   error,
 }: CVDAssessmentFormProps) {
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
+    "https://cvdapi.imurad.me";
+
   const [formData, setFormData] = useState<Record<string, string>>({
     // Demographics
     Sex: "",
@@ -314,9 +318,7 @@ export default function CVDAssessmentForm({
 
   const loadExampleData = async (type: "low_risk" | "high_risk") => {
     try {
-      const response = await fetch(
-        `http://54.160.253.120:5001/api/example?type=${type}`
-      );
+      const response = await fetch(`${API_BASE_URL}/api/example?type=${type}`);
       const data = await response.json();
 
       if (data.data) {

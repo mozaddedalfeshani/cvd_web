@@ -302,7 +302,7 @@ CMD ["pnpm", "start"]
 
 ```bash
 # Production environment variables
-NEXT_PUBLIC_API_BASE_URL=https://api.yourapp.com
+NEXT_PUBLIC_API_BASE_URL=https://cvdapi.imurad.me
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 NODE_ENV=production
 ```
