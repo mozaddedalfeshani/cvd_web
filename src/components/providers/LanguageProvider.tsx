@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Language, translations } from '@/lib/translations';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { Language, translations } from "@/lib/translations";
 
 type LanguageContextType = {
   language: Language;
@@ -12,25 +12,27 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === "undefined") return "en";
 
-  // Optional: Persist language preference
+    const savedLang = localStorage.getItem("language") as Language | null;
+    return savedLang || "en";
+  });
+
   useEffect(() => {
-    const savedLang = localStorage.getItem('language') as Language;
-    if (savedLang) setLanguage(savedLang);
-  }, []);
+    localStorage.setItem("language", language);
+  }, [language]);
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
-    localStorage.setItem('language', lang);
   };
 
   return (
-    <LanguageContext.Provider 
-      value={{ 
-        language, 
-        setLanguage: handleSetLanguage, 
-        t: translations[language] 
+    <LanguageContext.Provider
+      value={{
+        language,
+        setLanguage: handleSetLanguage,
+        t: translations[language],
       }}
     >
       {children}
@@ -41,7 +43,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
   return context;
 }

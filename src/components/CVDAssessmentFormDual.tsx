@@ -117,7 +117,10 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
   useEffect(() => {
     let active = true;
 
-    setFeatures(null);
+    const resetFeaturesTimer = window.setTimeout(() => {
+      if (active) setFeatures(null);
+    }, 0);
+
     getFeatures(selectedModel)
       .then((data) => {
         if (!active) return;
@@ -141,6 +144,7 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
 
     return () => {
       active = false;
+      window.clearTimeout(resetFeaturesTimer);
     };
   }, [selectedModel]);
 

@@ -59,20 +59,20 @@ frontend/
 
 ### Prerequisites
 
-- Node.js 16+
-- npm or yarn
+- Node.js 20.9+
+- pnpm 10.x
 
 ### Installation
 
 ```bash
 cd frontend
-npm install
+pnpm install
 ```
 
 ### Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Visit http://localhost:3000 to view the application.
@@ -80,8 +80,8 @@ Visit http://localhost:3000 to view the application.
 ### Production Build
 
 ```bash
-npm run build
-npm start
+pnpm build
+pnpm start
 ```
 
 ## 🎯 Component Overview
@@ -127,7 +127,7 @@ Update API endpoints in components:
 ```typescript
 // CVDAssessmentForm.tsx
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://54.160.253.120:5001";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://cvdapi.imurad.me";
 
 const response = await fetch(`${API_BASE_URL}/api/predict`, {
   method: "POST",
@@ -143,7 +143,7 @@ const response = await fetch(`${API_BASE_URL}/api/predict`, {
 Create `.env.local`:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://54.160.253.120:5001
+NEXT_PUBLIC_API_BASE_URL=https://cvdapi.imurad.me
 NEXT_PUBLIC_APP_NAME="CVD Risk Assessment"
 NEXT_PUBLIC_MODEL_VERSION="1.0"
 ```
@@ -228,15 +228,11 @@ All clinical fields are marked as required:
 
 ### Unit Tests
 
-```bash
-npm run test
-```
+Not configured in this repo yet.
 
 ### E2E Tests
 
-```bash
-npm run test:e2e
-```
+Not configured in this repo yet.
 
 ### Component Tests
 
@@ -281,31 +277,32 @@ import Image from "next/image";
 ### Vercel (Recommended)
 
 ```bash
-npm i -g vercel
+pnpm add -g vercel
 vercel
 ```
 
 ### Docker
 
 ```dockerfile
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --only=production
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod
 
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]
 ```
 
 ### Environment Setup
 
 ```bash
 # Production environment variables
-NEXT_PUBLIC_API_URL=https://api.yourapp.com
+NEXT_PUBLIC_API_BASE_URL=https://api.yourapp.com
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 NODE_ENV=production
 ```
