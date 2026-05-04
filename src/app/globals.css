@@ -1,0 +1,104 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 10px);
+}
+
+:root {
+  --radius: 1.35rem;
+  --background: #fff9ed;
+  --foreground: #2d2118;
+  --card: #fffdf7;
+  --card-foreground: #2d2118;
+  --popover: #fffdf7;
+  --popover-foreground: #2d2118;
+  --primary: #f15b5d;
+  --primary-foreground: #fffaf0;
+  --secondary: #dff7ef;
+  --secondary-foreground: #17433a;
+  --muted: #f7ead7;
+  --muted-foreground: #7c6654;
+  --accent: #ffe2a8;
+  --accent-foreground: #5c3b11;
+  --destructive: #dd3d3d;
+  --border: #ead8bc;
+  --input: #ead8bc;
+  --ring: #f6a443;
+}
+
+* {
+  @apply border-border outline-ring/50;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground;
+  font-family: var(--font-body), var(--font-bengali), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), cursive;
+}
+
+.soft-grid {
+  background-image:
+    linear-gradient(rgba(109, 78, 42, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(109, 78, 42, 0.07) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.curve-card {
+  border-radius: 2rem 3.5rem 2.2rem 3rem;
+}
+
+.squiggle {
+  position: absolute;
+  width: 180px;
+  height: 70px;
+  border: 4px solid currentColor;
+  border-color: currentColor transparent transparent transparent;
+  border-radius: 50%;
+  transform: rotate(-10deg);
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-12px) rotate(2deg);
+  }
+}
+
+.floaty {
+  animation: floaty 5s ease-in-out infinite;
+}
