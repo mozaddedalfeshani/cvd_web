@@ -31,6 +31,7 @@ import {
   type PredictPayload,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type Props = {
   onSubmit: (data: PredictPayload) => void;
@@ -85,6 +86,8 @@ function parseValue(value: string) {
 }
 
 export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Props) {
+  const { t } = useLanguage();
+  const copy = t.checkPage;
   const [models, setModels] = useState<ModelOption[]>([]);
   const [selectedModel, setSelectedModel] = useState<ModelType>("binary");
   const [features, setFeatures] = useState<FeaturesResponse | null>(null);
@@ -105,14 +108,14 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
         setSetupError(
           err instanceof Error
             ? err.message
-            : "Could not load models from the backend."
+            : copy.errors.models
         );
       });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [copy.errors.models]);
 
   useEffect(() => {
     let active = true;
@@ -138,7 +141,7 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
         setSetupError(
           err instanceof Error
             ? err.message
-            : "Could not load model features."
+            : copy.errors.features
         );
       });
 
@@ -146,7 +149,7 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
       active = false;
       window.clearTimeout(resetFeaturesTimer);
     };
-  }, [selectedModel]);
+  }, [copy.errors.features, selectedModel]);
 
   const visibleCategories = Object.entries(features?.categories || {})
     .map(([category, fields]) => [
@@ -167,7 +170,7 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
       });
     } catch (err) {
       setSetupError(
-        err instanceof Error ? err.message : "Could not load example patient."
+        err instanceof Error ? err.message : copy.errors.example
       );
     }
   };
@@ -181,7 +184,7 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
     );
     const missing = requiredFields.filter((field) => !formData[field]);
     if (missing.length > 0) {
-      setSetupError(`Please fill: ${missing.map((field) => FIELD_LABELS[field] || field).join(", ")}`);
+      setSetupError(`${copy.pleaseFill}: ${missing.map((field) => copy.fields[field as keyof typeof copy.fields] || FIELD_LABELS[field] || field).join(", ")}`);
       return;
     }
 
@@ -221,11 +224,11 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
                 {model.accuracy}
               </span>
             </div>
-            <h3 className="font-display mt-5 text-3xl font-black">{model.name}</h3>
-            <p className="mt-2 text-[#6f5b49]">{model.description}</p>
+            <h3 className="font-display mt-5 text-3xl font-black">{copy.model.name || model.name}</h3>
+            <p className="mt-2 text-[#6f5b49]">{copy.model.description || model.description}</p>
             <div className="mt-5 flex flex-wrap gap-2 text-sm font-black text-[#7c6654]">
               <span className="rounded-full bg-white/80 px-3 py-1">
-                {model.features} fields
+                {model.features} {copy.fieldsSuffix}
               </span>
               <span className="rounded-full bg-white/80 px-3 py-1">
                 {model.time_required}
@@ -238,8 +241,8 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
       <section className="curve-card border-2 border-[#2d2118]/10 bg-[#2d2118] p-5 text-white">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <h3 className="font-display text-3xl font-black">Need a quick test?</h3>
-            <p className="text-white/70">Load a binary HIGH or NON-HIGH sample, then press predict.</p>
+            <h3 className="font-display text-3xl font-black">{copy.quickTitle}</h3>
+            <p className="text-white/70">{copy.quickSubtitle}</p>
           </div>
           <div className="flex gap-3">
             <Button
@@ -247,14 +250,14 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
               onClick={() => loadExampleData("non_high")}
               className="rounded-full bg-[#bfeee1] px-5 font-black text-[#17433a] hover:bg-[#dff7ef]"
             >
-              NON-HIGH sample
+              {copy.nonHighSample}
             </Button>
             <Button
               type="button"
               onClick={() => loadExampleData("high")}
               className="rounded-full bg-[#ffc7c8] px-5 font-black text-[#7b2f2f] hover:bg-[#ffd7d8]"
             >
-              High sample
+              {copy.highSample}
             </Button>
           </div>
         </div>
@@ -269,7 +272,7 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
       {!features ? (
         <div className="curve-card flex items-center justify-center gap-3 border-2 border-dashed border-[#2d2118]/15 bg-white/70 p-12 text-[#7c6654]">
           <HugeiconsIcon icon={Loading03Icon} size={24} strokeWidth={2} className="animate-spin" />
-          Loading model fields...
+          {copy.loadingFields}
         </div>
       ) : (
         <section className="space-y-5">
@@ -284,13 +287,15 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
                   <div className="rounded-[1.2rem] bg-[#ffe2a8] p-3">
                     <HugeiconsIcon icon={icon} size={24} strokeWidth={1.8} />
                   </div>
-                  <h3 className="font-display text-3xl font-black">{category}</h3>
+                  <h3 className="font-display text-3xl font-black">
+                    {copy.categories[category as keyof typeof copy.categories] || category}
+                  </h3>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {fields.map((field) => {
                     const options = features.categorical_options[field];
-                    const label = FIELD_LABELS[field] || field;
+                    const label = copy.fields[field as keyof typeof copy.fields] || FIELD_LABELS[field] || field;
 
                     return (
                       <div key={field} className="space-y-2">
@@ -308,12 +313,12 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
                               id={field}
                               className="h-12 w-full rounded-[1.1rem] border-2 bg-[#fffaf0] px-4 font-bold"
                             >
-                              <SelectValue placeholder={`Choose ${label}`} />
+                              <SelectValue placeholder={`${copy.choose} ${label}`} />
                             </SelectTrigger>
                             <SelectContent className="rounded-[1.1rem]">
                               {options.map((option) => (
                                 <SelectItem key={option} value={option}>
-                                  {option}
+                                  {copy.options[option as keyof typeof copy.options] || option}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -330,7 +335,7 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
                                 [field]: event.target.value,
                               }))
                             }
-                            placeholder={`Enter ${label.toLowerCase()}`}
+                            placeholder={`${copy.enter} ${label}`}
                             className="h-12 rounded-[1.1rem] border-2 bg-[#fffaf0] px-4 font-bold"
                           />
                         )}
@@ -352,12 +357,12 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
         {loading ? (
           <>
             <HugeiconsIcon icon={Loading03Icon} size={24} strokeWidth={2} className="animate-spin" />
-            Predicting with Flask API...
+            {copy.predicting}
           </>
         ) : (
           <>
             <HugeiconsIcon icon={CheckmarkCircle02Icon} size={24} strokeWidth={2} />
-            Predict CVD risk
+            {copy.predict}
           </>
         )}
       </Button>

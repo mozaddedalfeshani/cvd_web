@@ -15,12 +15,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window === "undefined") return "en";
 
-    const savedLang = localStorage.getItem("language") as Language | null;
-    return savedLang || "en";
+    const savedLang = window.localStorage.getItem("language");
+    if (savedLang === "en" || savedLang === "bn") {
+      return savedLang;
+    }
+
+    return "en";
   });
 
   useEffect(() => {
     localStorage.setItem("language", language);
+    document.documentElement.lang = language;
+    document.body.dataset.language = language;
   }, [language]);
 
   const handleSetLanguage = (lang: Language) => {

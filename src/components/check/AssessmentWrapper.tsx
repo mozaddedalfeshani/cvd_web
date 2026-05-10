@@ -11,10 +11,13 @@ import {
 import CVDAssessmentFormDual from "@/components/CVDAssessmentFormDual";
 import PredictionResultView from "@/components/PredictionResult";
 import { predictRisk, type PredictPayload, type PredictionResult } from "@/lib/api";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 import { useState } from "react";
 
 export default function AssessmentWrapper() {
+  const { t } = useLanguage();
+  const copy = t.checkPage;
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +34,7 @@ export default function AssessmentWrapper() {
       setError(
         err instanceof Error
           ? err.message
-          : "Backend connection failed. Please start the Flask API."
+          : copy.errors.backend
       );
     } finally {
       setLoading(false);
@@ -49,11 +52,11 @@ export default function AssessmentWrapper() {
           className="inline-flex w-fit items-center gap-2 rounded-full border-2 border-[#2d2118]/10 bg-white/75 px-4 py-2 font-black text-[#6f5b49] shadow-sm backdrop-blur transition hover:-translate-y-0.5"
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={18} strokeWidth={2} />
-          Back home
+          {copy.backHome}
         </Link>
         <div className="inline-flex w-fit items-center gap-2 rounded-full bg-[#2d2118] px-4 py-2 font-black text-white">
           <HugeiconsIcon icon={MagicWand01Icon} size={18} strokeWidth={2} />
-          Flask API + XGBoost
+          {copy.apiBadge}
         </div>
       </header>
 
@@ -62,16 +65,14 @@ export default function AssessmentWrapper() {
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#dff7ef] px-4 py-2 text-sm font-black text-[#17433a]">
               <HugeiconsIcon icon={SparklesIcon} size={18} strokeWidth={2} />
-              New assessment studio
+              {copy.badge}
             </div>
             <h1 className="font-display text-5xl font-black leading-[0.95] text-[#2d2118] md:text-7xl">
-              Tell the model a tiny health story.
+              {copy.title}
             </h1>
           </div>
           <p className="max-w-2xl text-lg leading-8 text-[#6f5b49]">
-            The research paper frames prediction as binary screening: HIGH
-            versus NON-HIGH. Fill the 17 non-leakage features and send the form
-            through `fetch` to the trained backend.
+            {copy.subtitle}
           </p>
         </div>
       </section>
@@ -92,9 +93,9 @@ export default function AssessmentWrapper() {
                 <HugeiconsIcon icon={HeartCheckIcon} size={30} strokeWidth={1.8} />
               </div>
               <div>
-                <h2 className="font-display text-3xl font-black">CVD risk form</h2>
+                <h2 className="font-display text-3xl font-black">{copy.formTitle}</h2>
                 <p className="text-[#7c6654]">
-                  Required fields come directly from `/api/features/:model`.
+                  {copy.formSubtitle}
                 </p>
               </div>
             </div>

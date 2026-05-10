@@ -64,7 +64,11 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-display), cursive;
+  font-family: var(--font-display), var(--font-bengali), cursive;
+}
+
+body[data-language="bn"] {
+  font-family: var(--font-bengali), var(--font-body), sans-serif;
 }
 
 .soft-grid {
