@@ -9,7 +9,6 @@ import {
   Shield01Icon,
   Stethoscope02Icon,
   UserAdd01Icon,
-  UserCircleIcon,
   UserIcon,
 } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";

@@ -20,7 +20,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       return savedLang;
     }
 
-    return "en";
+    return "bn";
   });
 
   useEffect(() => {

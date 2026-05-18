@@ -62,11 +62,7 @@ export default function AdminDashboard() {
   const [loadingAssessments, setLoadingAssessments] = useState(false);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user || user.role !== "admin") {
-      setLoadingUsers(false);
-      return;
-    }
+    if (authLoading || !user || user.role !== "admin") return;
 
     fetch("/api/admin/users")
       .then((r) => r.json())
@@ -337,7 +333,7 @@ function AdminActions({ onUsersRefresh }: { onUsersRefresh: () => void }) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h3 className="font-display text-2xl font-black text-[#2d2118]">Admin Actions</h3>
-          <p className="text-sm text-[#7c6654]">Re-run demo account seed (idempotent)</p>
+          <p className="text-sm text-[#7c6654]">Re-seed verified accounts (safe to re-run)</p>
         </div>
         <Button
           type="button"
@@ -350,7 +346,7 @@ function AdminActions({ onUsersRefresh }: { onUsersRefresh: () => void }) {
           ) : (
             <HugeiconsIcon icon={CheckmarkCircle02Icon} size={18} strokeWidth={2} />
           )}
-          Seed demo accounts
+          Initialize accounts
         </Button>
       </div>
       {msg && (

@@ -181,8 +181,8 @@ export default function PredictionResultView({ prediction, onReset, uiMode = "si
             <HugeiconsIcon icon={Shield01Icon} size={26} strokeWidth={1.8} />
             <p>
               {isClinical
-                ? "Research disclaimer: this follows the paper’s HIGH vs NON-HIGH screening framing. It is not a medical diagnosis."
-                : "This result is from a research model and is not a medical diagnosis. Always consult a qualified doctor."}
+                ? "This tool provides clinical decision support only. Results must be interpreted by a qualified healthcare professional."
+                : "This result is a screening aid and is not a medical diagnosis. Always consult a qualified doctor."}
             </p>
           </div>
           {onReset && (
