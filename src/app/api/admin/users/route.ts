@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserFromAccessToken, listAllUsers } from "@/lib/auth";
 
+type UserWithCount = Awaited<ReturnType<typeof listAllUsers>>[number];
+
 export const runtime = "nodejs";
 
 export async function GET() {
@@ -11,7 +13,7 @@ export async function GET() {
     }
 
     const users = await listAllUsers();
-    const userList = users.map((u) => ({
+    const userList = users.map((u: UserWithCount) => ({
       id: u.id,
       name: u.name,
       email: u.email,
