@@ -33,10 +33,13 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
+type UiMode = "simple" | "clinical";
+
 type Props = {
   onSubmit: (data: PredictPayload) => void;
   loading: boolean;
   error: string | null;
+  uiMode?: UiMode;
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -63,6 +66,20 @@ const FIELD_LABELS: Record<string, string> = {
   Pulse_Pressure: "Pulse pressure",
 };
 
+const CLINICAL_FIELD_LABELS: Record<string, string> = {
+  "Systolic BP": "Systolic BP (mmHg)",
+  "Diastolic BP": "Diastolic BP (mmHg)",
+  "Total Cholesterol (mg/dL)": "Total Cholesterol (mg/dL)",
+  "HDL (mg/dL)": "HDL-C (mg/dL)",
+  "Fasting Blood Sugar (mg/dL)": "FBS (mg/dL)",
+  "Estimated LDL (mg/dL)": "LDL-C est. (mg/dL)",
+  "Abdominal Circumference (cm)": "Abdominal Circumference (cm)",
+  "Weight (kg)": "Body Weight (kg)",
+  "Height (cm)": "Height (cm)",
+  BMI: "BMI (kg/m²)",
+  "Waist-to-Height Ratio": "Waist-to-Height Ratio",
+};
+
 const DERIVED_FIELDS = [
   "Cholesterol_HDL_Ratio",
   "LDL_HDL_Ratio",
@@ -85,7 +102,7 @@ function parseValue(value: string) {
   return Number.isNaN(numeric) ? value : numeric;
 }
 
-export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Props) {
+export default function CVDAssessmentFormDual({ onSubmit, loading, error, uiMode = "simple" }: Props) {
   const { t } = useLanguage();
   const copy = t.checkPage;
   const [models, setModels] = useState<ModelOption[]>([]);
@@ -295,7 +312,9 @@ export default function CVDAssessmentFormDual({ onSubmit, loading, error }: Prop
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {fields.map((field) => {
                     const options = features.categorical_options[field];
-                    const label = copy.fields[field as keyof typeof copy.fields] || FIELD_LABELS[field] || field;
+                    const label = uiMode === "clinical"
+                      ? (CLINICAL_FIELD_LABELS[field] ?? FIELD_LABELS[field] ?? field)
+                      : (copy.fields[field as keyof typeof copy.fields] || FIELD_LABELS[field] || field);
 
                     return (
                       <div key={field} className="space-y-2">

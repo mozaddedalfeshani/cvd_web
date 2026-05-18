@@ -117,6 +117,13 @@ export const translations = {
       working: "Working...",
       optional: "Optional: assessments still work without signing in.",
       genericError: "Something went wrong. Please try again.",
+      roleLabel: "I am a...",
+      roles: {
+        admin: "Admin",
+        user: "Patient",
+        assistant: "Assistant",
+        doctor: "Doctor",
+      },
     },
     features: {
       title: "Why Choose Our AI?",
@@ -286,6 +293,13 @@ export const translations = {
       working: "কাজ হচ্ছে...",
       optional: "ঐচ্ছিক: সাইন ইন না করলেও assessment কাজ করবে।",
       genericError: "কিছু ভুল হয়েছে। আবার চেষ্টা করুন।",
+      roleLabel: "আমি একজন...",
+      roles: {
+        admin: "অ্যাডমিন",
+        user: "রোগী",
+        assistant: "সহকারী",
+        doctor: "ডাক্তার",
+      },
     },
     features: {
       title: "কেন আমাদের এআই বেছে নেবেন?",

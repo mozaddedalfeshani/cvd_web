@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Baloo_2, Noto_Sans_Bengali, Nunito } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import LanguageToggle from "@/components/ui-custom/LanguageToggle";
 
 const baloo = Baloo_2({
@@ -41,8 +42,10 @@ export default function RootLayout({
         className={`${baloo.variable} ${nunito.variable} ${notoSansBengali.variable} antialiased`}
       >
         <LanguageProvider>
-          {children}
-          <LanguageToggle />
+          <AuthProvider>
+            {children}
+            <LanguageToggle />
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>

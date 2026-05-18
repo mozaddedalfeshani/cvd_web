@@ -1,54 +1,67 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Login01Icon, Logout01Icon, UserAdd01Icon, UserCircleIcon } from "@hugeicons/core-free-icons";
+import {
+  Doctor01Icon,
+  Login01Icon,
+  Logout01Icon,
+  Shield01Icon,
+  Stethoscope02Icon,
+  UserAdd01Icon,
+  UserCircleIcon,
+  UserIcon,
+} from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
+import { useAuth } from "@/components/providers/AuthProvider";
+import type { UserRole } from "@/lib/auth";
 
 type Mode = "login" | "signup";
+
+const roleConfig = {
+  admin: {
+    icon: Shield01Icon,
+    badgeClass: "bg-[#f15b5d] text-white",
+    badgeText: "Admin",
+  },
+  user: {
+    icon: UserIcon,
+    badgeClass: "",
+    badgeText: null,
+  },
+  assistant: {
+    icon: Stethoscope02Icon,
+    badgeClass: "bg-[#dff7ef] text-[#17433a]",
+    badgeText: "Assistant",
+  },
+  doctor: {
+    icon: Doctor01Icon,
+    badgeClass: "bg-[#ffc7c8] text-[#7b2f2f]",
+    badgeText: "Doctor",
+  },
+} as const;
 
 export default function AuthPanel() {
   const { t } = useLanguage();
   const copy = t.auth;
-  const [user, setUser] = useState<User | null>(null);
+  const { user, setUser } = useAuth();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<UserRole>("user");
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    fetch("/api/auth/me")
-      .then((response) => response.json())
-      .then((data: { user: User | null }) => {
-        if (active) setUser(data.user);
-      })
-      .catch(() => {
-        if (active) setUser(null);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const resetForm = () => {
     setName("");
     setEmail("");
     setPassword("");
+    setRole("user");
     setStatus(null);
   };
 
@@ -63,18 +76,22 @@ export default function AuthPanel() {
     setStatus(null);
 
     try {
+      const body = mode === "signup"
+        ? { name, email, password, role }
+        : { email, password };
+
       const response = await fetch(`/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mode === "signup" ? { name, email, password } : { email, password }),
+        body: JSON.stringify(body),
       });
-      const data = (await response.json()) as { user?: User; error?: string };
+      const data = await response.json() as { user?: typeof user; error?: string };
 
       if (!response.ok || !data.user) {
         throw new Error(data.error || copy.genericError);
       }
 
-      setUser(data.user);
+      setUser(data.user ?? null);
       setOpen(false);
       resetForm();
     } catch (err) {
@@ -92,11 +109,17 @@ export default function AuthPanel() {
   };
 
   if (user) {
+    const cfg = roleConfig[user.role];
     return (
       <div className="flex flex-wrap items-center gap-2 rounded-full border-2 border-[#2d2118]/10 bg-white/75 p-1.5 shadow-sm backdrop-blur">
         <div className="flex items-center gap-2 px-3 font-black text-[#2d2118]">
-          <HugeiconsIcon icon={UserCircleIcon} size={20} strokeWidth={2} />
+          <HugeiconsIcon icon={cfg.icon} size={20} strokeWidth={2} />
           <span className="max-w-[140px] truncate">{user.name}</span>
+          {cfg.badgeText && (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-black ${cfg.badgeClass}`}>
+              {cfg.badgeText}
+            </span>
+          )}
         </div>
         <Button
           type="button"
@@ -115,7 +138,7 @@ export default function AuthPanel() {
     <div className="relative">
       <Button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => setOpen((c) => !c)}
         className="rounded-full bg-[#f15b5d] px-5 font-black text-white shadow-[0_8px_0_#7b2f2f]"
       >
         <HugeiconsIcon icon={mode === "signup" ? UserAdd01Icon : Login01Icon} size={18} strokeWidth={2} />
@@ -123,7 +146,7 @@ export default function AuthPanel() {
       </Button>
 
       {open && (
-        <div className="absolute right-0 top-14 z-40 w-[min(92vw,360px)] rounded-[1.8rem] border-2 border-[#2d2118]/10 bg-white p-5 shadow-[0_28px_70px_rgba(77,53,31,0.22)]">
+        <div className="absolute right-0 top-14 z-40 w-[min(92vw,380px)] rounded-[1.8rem] border-2 border-[#2d2118]/10 bg-white p-5 shadow-[0_28px_70px_rgba(77,53,31,0.22)]">
           <div className="mb-4 grid grid-cols-2 gap-2 rounded-full bg-[#f7ead7] p-1">
             <button
               type="button"
@@ -147,18 +170,45 @@ export default function AuthPanel() {
 
           <form onSubmit={submit} className="space-y-3">
             {mode === "signup" && (
-              <div className="space-y-2">
-                <Label htmlFor="auth-name" className="font-black text-[#5c3b11]">
-                  {copy.name}
-                </Label>
-                <Input
-                  id="auth-name"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  className="h-11 rounded-[1.1rem] border-2 bg-[#fffaf0] px-4 font-bold"
-                  required
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="auth-name" className="font-black text-[#5c3b11]">
+                    {copy.name}
+                  </Label>
+                  <Input
+                    id="auth-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-11 rounded-[1.1rem] border-2 bg-[#fffaf0] px-4 font-bold"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="font-black text-[#5c3b11]">{copy.roleLabel}</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["user", "assistant", "doctor"] as UserRole[]).map((r) => {
+                      const cfg = roleConfig[r];
+                      const selected = role === r;
+                      return (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => setRole(r)}
+                          className={`flex flex-col items-center gap-1.5 rounded-[1.2rem] border-2 p-3 text-xs font-black transition ${
+                            selected
+                              ? "border-[#f15b5d] bg-[#fff2d9]"
+                              : "border-[#2d2118]/10 bg-[#fffaf0] text-[#6f5b49]"
+                          }`}
+                        >
+                          <HugeiconsIcon icon={cfg.icon} size={22} strokeWidth={1.8} />
+                          {copy.roles[r]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">
@@ -169,7 +219,7 @@ export default function AuthPanel() {
                 id="auth-email"
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-11 rounded-[1.1rem] border-2 bg-[#fffaf0] px-4 font-bold"
                 required
               />
@@ -184,7 +234,7 @@ export default function AuthPanel() {
                 type="password"
                 minLength={8}
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 className="h-11 rounded-[1.1rem] border-2 bg-[#fffaf0] px-4 font-bold"
                 required
               />

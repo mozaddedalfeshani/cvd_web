@@ -15,6 +15,7 @@ import type { PredictionResult } from "@/lib/api";
 type Props = {
   prediction: PredictionResult;
   onReset?: () => void;
+  uiMode?: "simple" | "clinical";
 };
 
 const riskTheme = {
@@ -34,10 +35,16 @@ const riskTheme = {
   },
 };
 
-export default function PredictionResultView({ prediction, onReset }: Props) {
+export default function PredictionResultView({ prediction, onReset, uiMode = "simple" }: Props) {
   const risk = prediction.prediction.risk_level;
   const theme = riskTheme[risk];
   const recommendations = prediction.clinical_interpretation.recommendations;
+  const isClinical = uiMode === "clinical";
+
+  const simpleCopy = {
+    NON_HIGH: "Your results do not show high cardiovascular risk right now. Keep up the healthy habits!",
+    HIGH: "Your results suggest you may be at higher cardiovascular risk. Please speak with a healthcare professional.",
+  };
 
   return (
     <div className="space-y-6">
@@ -49,26 +56,42 @@ export default function PredictionResultView({ prediction, onReset }: Props) {
               <HugeiconsIcon icon={theme.icon} size={58} strokeWidth={1.6} />
             </div>
             <p className="text-sm font-black uppercase tracking-[0.28em] opacity-70">
-              Binary screening result
+              {isClinical ? "Binary screening result" : "Your heart risk result"}
             </p>
             <h2 className="font-display mt-2 text-6xl font-black leading-none md:text-8xl">
               {theme.label}
             </h2>
-            <p className="mt-5 max-w-xl text-xl font-bold opacity-80">{theme.copy}</p>
+            <p className="mt-5 max-w-xl text-xl font-bold opacity-80">
+              {isClinical ? theme.copy : simpleCopy[risk]}
+            </p>
           </div>
           <div className="rounded-[2rem] bg-white/70 p-6">
-            <div className="grid grid-cols-2 gap-4">
-              <StatCard label="Confidence" value={`${(prediction.prediction.confidence * 100).toFixed(1)}%`} />
-              <StatCard label="Model" value="Binary" />
-              <StatCard label="Accuracy" value={`${(prediction.model_used.accuracy * 100).toFixed(1)}%`} />
-              <StatCard label="Features" value={String(prediction.model_used.features_used)} />
-            </div>
+            {isClinical ? (
+              <div className="grid grid-cols-2 gap-4">
+                <StatCard label="Confidence" value={`${(prediction.prediction.confidence * 100).toFixed(1)}%`} />
+                <StatCard label="Model" value="Binary" />
+                <StatCard label="Accuracy" value={`${(prediction.model_used.accuracy * 100).toFixed(1)}%`} />
+                <StatCard label="Features" value={String(prediction.model_used.features_used)} />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div className="rounded-[1.5rem] bg-white p-4 text-center">
+                  <p className="text-sm font-black text-[#7c6654]">How confident is the model?</p>
+                  <p className="font-display mt-1 text-4xl font-black text-[#2d2118]">
+                    {(prediction.prediction.confidence * 100).toFixed(0)}%
+                  </p>
+                </div>
+                <p className="text-center text-sm font-bold opacity-70">
+                  {prediction.clinical_interpretation.confidence_level} confidence
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1fr_0.85fr]">
-        <div className="curve-card border-2 border-[#2d2118]/10 bg-white/80 p-6">
+      {isClinical && (
+        <section className="curve-card border-2 border-[#2d2118]/10 bg-white/80 p-6">
           <div className="mb-6 flex items-center gap-3">
             <div className="rounded-[1.2rem] bg-[#ffe2a8] p-3">
               <HugeiconsIcon icon={AnalyticsUpIcon} size={26} strokeWidth={1.8} />
@@ -93,21 +116,63 @@ export default function PredictionResultView({ prediction, onReset }: Props) {
               </div>
             ))}
           </div>
-        </div>
+        </section>
+      )}
 
+      <section className={`grid gap-6 ${isClinical ? "lg:grid-cols-[1fr_0.85fr]" : ""}`}>
         <div className="curve-card border-2 border-[#2d2118]/10 bg-[#2d2118] p-6 text-white">
           <div className="mb-6 flex items-center gap-3">
             <div className="rounded-[1.2rem] bg-white/15 p-3">
               <HugeiconsIcon icon={Doctor01Icon} size={26} strokeWidth={1.8} />
             </div>
-            <h3 className="font-display text-3xl font-black">Next steps</h3>
+            <h3 className="font-display text-3xl font-black">
+              {isClinical ? "Next steps" : "What to do next"}
+            </h3>
           </div>
           <div className="space-y-4 text-white/80">
-            <Advice title="Recommendation" text={recommendations.recommendation} />
-            <Advice title="Follow-up" text={recommendations.follow_up} />
-            <Advice title="Lifestyle" text={recommendations.lifestyle} />
+            <Advice
+              title={isClinical ? "Recommendation" : "Our suggestion"}
+              text={recommendations.recommendation}
+            />
+            <Advice
+              title={isClinical ? "Follow-up" : "Follow-up"}
+              text={recommendations.follow_up}
+            />
+            <Advice
+              title={isClinical ? "Lifestyle" : "Lifestyle tips"}
+              text={recommendations.lifestyle}
+            />
           </div>
         </div>
+
+        {isClinical && (
+          <div className="curve-card border-2 border-[#2d2118]/10 bg-white/80 p-6">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="rounded-[1.2rem] bg-[#ffe2a8] p-3">
+                <HugeiconsIcon icon={AnalyticsUpIcon} size={26} strokeWidth={1.8} />
+              </div>
+              <h3 className="font-display text-3xl font-black">Model info</h3>
+            </div>
+            <div className="space-y-3 text-sm font-bold text-[#6f5b49]">
+              <div className="flex justify-between rounded-[1rem] bg-[#f7ead7] px-4 py-3">
+                <span>Model accuracy</span>
+                <span className="font-black text-[#2d2118]">{(prediction.model_used.accuracy * 100).toFixed(1)}%</span>
+              </div>
+              <div className="flex justify-between rounded-[1rem] bg-[#f7ead7] px-4 py-3">
+                <span>F1 score</span>
+                <span className="font-black text-[#2d2118]">{prediction.model_used.f1_score !== undefined ? (prediction.model_used.f1_score * 100).toFixed(1) + "%" : "—"}</span>
+              </div>
+              <div className="flex justify-between rounded-[1rem] bg-[#f7ead7] px-4 py-3">
+                <span>Features used</span>
+                <span className="font-black text-[#2d2118]">{prediction.model_used.features_used}</span>
+              </div>
+              <div className="flex justify-between rounded-[1rem] bg-[#f7ead7] px-4 py-3">
+                <span>Risk category</span>
+                <span className="font-black text-[#2d2118]">{prediction.clinical_interpretation.risk_category}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="curve-card border-2 border-dashed border-[#f15b5d]/35 bg-[#fffdf7]/80 p-6">
@@ -115,8 +180,9 @@ export default function PredictionResultView({ prediction, onReset }: Props) {
           <div className="flex items-start gap-3 text-[#6f5b49]">
             <HugeiconsIcon icon={Shield01Icon} size={26} strokeWidth={1.8} />
             <p>
-              Research disclaimer: this follows the paper’s HIGH vs NON-HIGH
-              screening framing. It is not a medical diagnosis.
+              {isClinical
+                ? "Research disclaimer: this follows the paper’s HIGH vs NON-HIGH screening framing. It is not a medical diagnosis."
+                : "This result is from a research model and is not a medical diagnosis. Always consult a qualified doctor."}
             </p>
           </div>
           {onReset && (

@@ -32,6 +32,7 @@ export type PredictionResult = {
     type: string;
     name: string;
     accuracy: number;
+    f1_score?: number;
     features_used: number;
   };
   prediction: {
